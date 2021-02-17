@@ -7,7 +7,7 @@ use assert_cmd::prelude::*;
 // Used for writing assertions
 use tempfile::NamedTempFile;
 
-const PROGRAM_NAME: &str = "tt";
+const PROGRAM_NAME: &str = "ts";
 
 #[test]
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
