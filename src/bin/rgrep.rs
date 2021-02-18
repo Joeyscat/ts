@@ -1,4 +1,7 @@
-use anyhow::{Context, Result, Error};
+use std::fs::File;
+use std::io::{BufReader};
+
+use anyhow::{ Error, Result};
 use structopt::StructOpt;
 
 /// Search for a pattern in a file and display the lines that contains it.
@@ -18,11 +21,10 @@ fn main() -> Result<()> {
         return Err(Error::msg( "argument <pattern> must not be empty"));
     };
 
-    // TODO use BufReader instead of read_to_string()
-    let content = std::fs::read_to_string(&args.path)
-        .with_context(|| format!("could not read file `{:?}`", &args.path))?;
+    let f = File::open(&args.path)?;
+    let reader = BufReader::new(f);
 
-    ts::find_matches(&content, &args.pattern, &mut std::io::stdout())?;
+    ts::find_matches(reader, &args.pattern, &mut std::io::stdout())?;
 
     Ok(())
 }
