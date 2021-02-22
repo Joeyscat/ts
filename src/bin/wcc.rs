@@ -1,8 +1,19 @@
 use std::collections::HashMap;
-use std::env;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::BufRead;
+
+use anyhow::Result;
+use structopt::StructOpt;
+
+#[derive(StructOpt)]
+struct Cli {
+    /// The path to the file to read
+    #[structopt(parse(from_os_str))]
+    path: std::path::PathBuf,
+    least: u64,
+}
+
 
 #[derive(Debug)]
 struct WordCounter(HashMap<String, u64>);
@@ -18,9 +29,9 @@ impl WordCounter {
         *count += 1;
     }
 
-    fn display(self, least: u64) {
+    fn display(self, least: &u64) {
         let mut s: Vec<(&String, &u64)> = self.0.iter()
-            .filter(|&(_k, v)| *v >= least)
+            .filter(|&(_k, v)| *v >= *least)
             .collect();
         s.sort_by(|a, b| b.1.cmp(a.1)
             .then(b.0.cmp(a.0)));
@@ -31,11 +42,11 @@ impl WordCounter {
     }
 }
 
-fn main() {
-    let arguments: Vec<String> = env::args().collect();
-    let filename = &arguments[1];
-    println!("Processing file: {}", filename);
-    let file = File::open(filename).expect("Could not open file");
+fn main() -> Result<()> {
+    let args = Cli::from_args();
+
+    println!("Processing file: {:?}", &args.path.to_str());
+    let file = File::open(&args.path)?;
     let reader = BufReader::new(file);
     let mut word_counter = WordCounter::new();
 
@@ -49,5 +60,7 @@ fn main() {
             }
         }
     }
-    word_counter.display(2);
+    word_counter.display(&args.least);
+
+    Ok(())
 }
